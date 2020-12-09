@@ -4,50 +4,21 @@ import numpy as np
 import matplotlib.image as mpimg
 from skimage import data, io
 from skimage.color import rgb2gray
-from skimage.transform import rotate
 import cv2
 from skimage import img_as_ubyte
 
 #reads the image
 skimage_image = rgb2gray(io.imread("example_image/05142020_1.jpeg"))
-# skimage_image = rgb2gray(io.imread("example_image/9blackpixeltest.png"))
-
-
-# image[a,b] a is the #rows (yaxis) b is the #columns (xaxis)
-# this loops through all the rows from top to bottom
-
-
-# threshold is the background color number
-threshold = (skimage_image[int(0.2 * len(skimage_image)), int(0.25 * len (skimage_image[0]))])
-for i in range(len(skimage_image)):
-    #this loops through all the values in each row (image[i]) fron left to right
-    for j in range(len(skimage_image[i])):
-        #if it is lighter than or equal to the threshold - a little buffer
-        #not sure if this step is necessary
-        if skimage_image[i,j] >= threshold - 0.2:
-            #subtract threshold from number
-            skimage_image[i, j] = skimage_image[i, j] + (1 - threshold);
-            if (skimage_image[i, j] > 1):
-                skimage_image[i,j] = 1
-# FOR GRAYSCALE 1 IS PURE WHITE, 0 IS PURE BLACK
-
-
-# print(len(skimage_image))
-# print (int(0.2 * len(skimage_image)))
-# print(len(skimage_image[0]))
-# print(int(0.25 * len(skimage_image[0])))
-# # io.imshow(image)
-# # io.show()
-
 
 cv_image = img_as_ubyte(skimage_image)
 cv_image = cv2.resize(cv_image, (960, 540))
 
-
+mouseX = 0
+mouseY = 0
 
 #first (#2) number is the threshold number
 #second (#3 number is the end number to assign the numbers that pass it
-ret, thresh = cv2.threshold(cv_image, 245, 255, cv2.THRESH_BINARY)
+ret, thresh = cv2.threshold(cv_image, 180, 255, cv2.THRESH_BINARY)
 
 
 #contours is a list of all the contours
@@ -114,15 +85,28 @@ print(len(contours))
 #For cv2.getTrackbarPos() function, first argument is the trackbar name, second one is the window name to which it is attached, 
 # third argument is the default value, fourth one is the maximum value and fifth one is the callback function which is executed everytime trackbar value changes. 
 # The callback function always has a default argument which is the trackbar position.
-cv2.namedWindow('main')
+def draw_circle(event,x,y,flags,param):
+    global mouseX,mouseY
+    if event == cv2.EVENT_LBUTTONDBLCLK:
+        cv2.circle(cv_image,(x,y),100,(255,0,0),-1)
+        mouseX,mouseY = x,y
+cv2.namedWindow('image')
 # cv2.createTrackbar('Threshold', "main", 225, 255, None)
+cv2.setMouseCallback('image',draw_circle)
 cv2.drawContours(cv_image, drawcontours, -1, (0, 245, 0), 3)
 print("fin")
-cv2.imshow('img', cv_image)
+# cv2.imshow('img', cv_image)
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
+while(1):
+    cv2.imshow('image',cv_image)
+    k = cv2.waitKey(20) & 0xFF
+    if k == 27:
+        break
+    elif k == ord('a'):
+        print (mouseX,mouseY)
 
 #TODO
 #shape recognition and outlining. 
