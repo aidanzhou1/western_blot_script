@@ -171,7 +171,7 @@ def skimagetocv(skimage_image):
 
 
 def threshold(cv_image, threshold):
-    thresh = cv2.adaptiveThreshold(cv_image,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,51,10)
+    thresh = cv2.adaptiveThreshold(cv_image,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,101,10)
     # ret, thresh = cv2.threshold(cv_image, threshold, 255, cv2.THRESH_BINARY)
     # cv2.imshow('imasdfsg', thresh)
 
@@ -211,7 +211,6 @@ def countcontours(cv_image, contours):
         out = np.full_like(cv_image, 255)  # Extract out the object and place into output image
 
 
-        #TODO ask ms oneal what this means
         out[mask == 0] = cv_image[mask == 0]
 
 
