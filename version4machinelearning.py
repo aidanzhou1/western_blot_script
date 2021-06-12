@@ -8,7 +8,7 @@ from skimage.color import rgb2gray, gray2rgb
 import cv2
 from skimage import img_as_ubyte
 from skimage.transform import rotate
-import autokeras as ak
+# import autokeras as ak
 from keras import models
 from keras.layers import core, convolutional, pooling
 
