@@ -97,6 +97,7 @@ def skimagefilter(y, x):
     skimage_image = rgb2gray(skimage_image)
     original_image = skimage_image
     threshold1 = (skimage_image[0,0])
+    height, width = skimage_image.shape
 
     posx = (int(0.25 * len(skimage_image[0])) / height ) * 540
     posy = (int(0.2 * len(skimage_image)) / width) * 960
