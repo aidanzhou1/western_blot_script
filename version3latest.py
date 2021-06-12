@@ -26,75 +26,101 @@ def nothing(x):
 def main(y, x):
     global thresholdglobal
 
-    global ogwidth,ogheight, posx, posy
-    original_image, skimage_image = skimagefilter(y, x)
-    cv_image, width, height = skimagetocv(skimage_image)
-    original_image, asdf,asd2 = skimagetocv(original_image)
-    original_image = gray2rgb(original_image)
-    ogwidth = width
-    ogheight = height
+    while (1):
+        cv2.namedWindow("img")
+        cv2.createTrackbar('Threshold', 'img', thresholdglobal, 255, nothing)
+        global ogwidth,ogheight, posx, posy
+        original_image, skimage_image = skimagefilter(y, x)
+        cv_image, width, height = skimagetocv(skimage_image)
+        original_image, asdf,asd2 = skimagetocv(original_image)
+        original_image = gray2rgb(original_image)
+        ogwidth = width
+        ogheight = height
 
-    #threshold doesn't really matter anymore because it's adaptive
-    thresh = threshold(cv_image,205)
-    # thresh = cannyedge(cv_image)
-    contours = findcontours(thresh)
-    goodlist, contourlist,valuelist = countcontours(cv_image, contours)
-    drawcontours = drawcontourlist(goodlist, contourlist, contours)
+        #threshold doesn't really matter anymore because it's adaptive
+        thresh = threshold(cv_image, cv2.getTrackbarPos('Threshold', 'img'))
+        # thresh = cannyedge(cv_image)
 
-    # cv2.createTrackbar('Threshold', "main", 225, 255, None)    
-    cv_imagergb = cv2.cvtColor(cv_image,cv2.COLOR_GRAY2RGB)
-    original_imagergb = original_image
-    cv2.drawContours(original_imagergb, drawcontours, -1, (0, 245, 0), 3)
-    
-    for k in range(len(valuelist)):
-        # Window name in which image is displayed 
-        window_name = 'img'
+        contours = findcontours(cv_image, thresh)
+        goodlist, contourlist,valuelist = countcontours(cv_image, contours)
+        drawcontours = drawcontourlist(goodlist, contourlist, contours)
+
+        # cv2.createTrackbar('Threshold', "main", 225, 255, None)    
+        cv_imagergb = cv2.cvtColor(cv_image,cv2.COLOR_GRAY2RGB)
+        original_imagergb = original_image
+        cv2.drawContours(original_imagergb, drawcontours, -1, (0, 245, 0), 3)
         
-        # font 
-        font = cv2.FONT_HERSHEY_SIMPLEX 
+        for k in range(len(valuelist)):
+            # Window name in which image is displayed 
+            window_name = 'img'
+            
+            # font 
+            font = cv2.FONT_HERSHEY_SIMPLEX 
+            
+            # org 
+            org = (50, 50) 
+            
+            # fontScale 
+            fontScale = 0.6
+            
+            # Blue color in BGR 
+            color = (0, 0, 255) 
+            
+            # Line thickness of 2 px 
+            thickness = 1
+            
+            # Using cv2.putText() method 
+            print(drawcontours[k][0].shape)
+            print(drawcontours[k][0][0][1])
+            original_imagergb = cv2.putText(original_imagergb, str(round(valuelist[k], 1)), (drawcontours[k][0][0,0],drawcontours[k][0][0,1]), font, fontScale, color, thickness, cv2.LINE_AA) 
+        print("fin")
+        print(posx)
+        print(posy)
+
+
+        #circle from where the thing skimage bg source is drawn
+        original_imagergb = cv2.circle(original_imagergb, (int(posx), int(posy)), radius=1, color=(0, 0, 255), thickness=-1)
+
+        #resize the entire image
+        original_imagergb = cv2.resize(original_imagergb, (1920, 900))
+
+        cv2.imshow('img', original_imagergb)
+        cv2.waitKey(0)
+        thresholdglobal = cv2.getTrackbarPos('Threshold', 'img')
+
+        cv2.destroyAllWindows()
         
-        # org 
-        org = (50, 50) 
+
+
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        # # cv2.namedWindow('img')
+        # # cv2.setMouseCallback('img',draw_circle, cv_image)
         
-        # fontScale 
-        fontScale = 1
-        
-        # Blue color in BGR 
-        color = (0, 0, 255) 
-        
-        # Line thickness of 2 px 
-        thickness = 2
-        
-        # Using cv2.putText() method 
-        # print(drawcontours[k][0].shape)
-        # print(drawcontours[k][0][0][1])
-        original_imagergb = cv2.putText(original_imagergb, str(round(valuelist[k], 1)), (drawcontours[k][0][0,0],drawcontours[k][0][0,1]), font, fontScale, color, thickness, cv2.LINE_AA) 
-
-
-
-    #circle from where the thing skimage bg source is drawn
-    original_imagergb = cv2.circle(original_imagergb, (int(posx), int(posy)), radius=1, color=(0, 0, 255), thickness=-1)
-
-    #resize the entire image
-    original_imagergb = cv2.resize(original_imagergb, (1920, 900))
-
-    # original_imagergb = cv2.resize(original_imagergb, (1920, 900))
-    print("fin")
-
-    cv2.imshow('img', original_imagergb)
-    cv2.waitKey(0)
-    thresholdglobal = cv2.getTrackbarPos('Threshold', 'img')
-
-    cv2.destroyAllWindows()
+            
 
         
-        
+def draw_circle(event,x,y,flags, cv_image):
+    if event == cv2.EVENT_LBUTTONDBLCLK:
+        print("XY:" + str (x) + "_ " + str(y))
+        print("AAAAASSSSSSSSSSSSS" + str(cv_image[y][x]))
+        main(y,x)
         
 def skimagefilter(y, x):
     global posx, posy
-    # skimage_image = io.imread("example_image/testimage2.png")
-    skimage_image = io.imread("example_image/05142020_1.jpeg")
+    # skimage_image = io.imread("example_image/03102020_2.jpeg")
+    skimage_image = io.imread("example_image/08262020_1.jpeg")
     skimage_image = rgb2gray(skimage_image)
+
+
+
+
+    # skimage_image = rotate(skimage_image, 90, resize=True)
+
+
+
+
+
     original_image = skimage_image
     threshold1 = (skimage_image[0,0])
     height, width = skimage_image.shape
@@ -111,28 +137,38 @@ def skimagefilter(y, x):
                 skimage_image[i, j] = skimage_image[i, j] + (1 - threshold1);
                 if (skimage_image[i, j] > 1):
                     skimage_image[i,j] = 1
+    # FOR GRAYSCALE 1 IS PURE WHITE, 0 IS PURE BLACK
     return original_image, skimage_image
 
 def skimagetocv(skimage_image):
+
     cv_image = img_as_ubyte(skimage_image)
     width, height = cv_image.shape[:2]
+    print("imagewidth" + str(width))
+    print("imageheioght" + str(height))
+
     return cv_image, width, height
 
 
 def threshold(cv_image, threshold):
-    thresh = cv2.adaptiveThreshold(cv_image,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,91,10)
+    thresh = cv2.adaptiveThreshold(cv_image,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,101,10)
+    # ret, thresh = cv2.threshold(cv_image, threshold, 255, cv2.THRESH_BINARY)
+    # cv2.imshow('imasdfsg', thresh)
+
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     return thresh
 
 def cannyedge(cv_image):
 
     canny = cv2.Canny(cv_image, 200, 240)
-    cv2.imshow('asdsssfasdf', canny)
+    cv2.imshow('asdfasdf', canny)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     return canny
 
 
-def findcontours(thresh):
+def findcontours(cv_image, thresh):
  
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     return contours
@@ -144,40 +180,34 @@ def countcontours(cv_image, contours):
     goodlist = np.array([])
     contourlist = np.array([])
     valuelist = np.array([])
-    print("Number of Contours: " + str(len(contours)))
+    print(len(contours))
     #for every contour
     for i in range(len(contours) - 1):
-
         mask = np.full_like(cv_image, 255)  # Create mask where white is what we want, black otherwise
+        
         #Its first argument is source image, second argument is the contours which should be passed as a Python list, third argument is index of contours 
         # (useful when drawing individual contour. To draw all contours, pass -1) and remaining arguments are color, thickness etc.
-        print("Countour #:" + str(i))
-        #skip the first contour
-        mask = cv2.fillPoly(mask, pts =[contours[i + 1]], color=(0,0,0))
+        cv2.fillPoly(mask, pts =[contours[i + 1]], color=(0,0,0))
         out = np.full_like(cv_image, 255)  # Extract out the object and place into output image
 
-        #where mask = 0 make out the real darkness
+
         out[mask == 0] = cv_image[mask == 0]
-        print("size of out after masking: " + str(out.shape))
-        print("size of mask after masking: " + str(mask.shape))
+
 
         # Now crop
         (y, x) = np.where(mask == 0)
         (topy, topx) = (np.min(y), np.min(x))
         (bottomy, bottomx) = (np.max(y), np.max(x))
-        mask = mask[topy:bottomy, topx : bottomx]
-        out = out[topy + 1:bottomy - 1, topx + 1:bottomx - 1]
-
+        out = out[topy:bottomy + 1, topx:bottomx + 1]
         sumblack = 0
         times = 0
-        for y in range(len(out)):
-            for x in range(len(out[y])):
-                if (mask.size > 0 and mask[y].size > 0):
-                    if (mask[y,x] == 0 and not out[y,x] == 255):
-                        sumblack = sumblack + out[y, x]
-                        times = times + 1
-                # else:
-                    # print("This Pixel is not black so the sum was not added")
+        # cv2.imshow('asdfasdfasdf', out)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        for k in range(len(out)):
+            for j in range(len(out[k])):
+                sumblack = sumblack + out[k, j]
+                times = times + 1
         
         #if the contour is big enough
         #THIS FILTERS OUT ALL THE SMALL ONES< ADJUSTABLE NUMBER
@@ -192,8 +222,9 @@ def countcontours(cv_image, contours):
 
 def drawcontourlist(goodlist, contourlist, contours):
     drawcontours = []
-    print("Number of good contours: " + str(len(goodlist)))
+    print("length" + str(len(goodlist)))
     for k in range(len(goodlist)):
+        print("checkpoint2")
         print(goodlist[k])
         drawcontours.append(contours[int(goodlist[k])])
     return drawcontours
