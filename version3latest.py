@@ -58,11 +58,11 @@ def onclick(event, skimage_image, original_image, save_image, file_path):
 '''
 Main function. 
 '''
-def main(y, x, skimage_image, original_image, save_image, file_path):
+def main(x, y, skimage_image, original_image, save_image, file_path):
     print('main()')
 
     #initial thresholding manually using sci-kit image. Removes any pixels lighter than the background color the user selected.
-    skimage_image = skimageFilter(y, x, skimage_image)
+    skimage_image = skimageFilter(x, y, skimage_image)
 
     #converts from skimage to opencv (different formats)
     cv_image = skimageToCV(skimage_image)
@@ -132,7 +132,7 @@ def main(y, x, skimage_image, original_image, save_image, file_path):
         i = 2
         while (True):
             if (path.exists(new_path)):
-                new_path = mod_string + "(output_" + str(i) + ").jpeg"
+                new_path = "results/" + mod_string + "(output_" + str(i) + ").jpeg"
                 i = i + 1
             else:
                 break
@@ -146,10 +146,10 @@ Takes the grayscale value of the pixel at the coordinate.
 Loops through each pixel in the image, and subtracts the threshold value from those that are lighter or equal to the background color. 
 
 '''
-def skimageFilter(y, x, skimage_image):
+def skimageFilter(x, y, skimage_image):
    
     #gets threshold grayscale value from x,y coordinates.
-    threshold1 = (skimage_image[x,y])
+    threshold1 = (skimage_image[y,x])
 
     # posx = (int(0.25 * len(skimage_image[0])) / height ) * 540
     # posy = (int(0.2 * len(skimage_image)) / width) * 960
@@ -248,8 +248,9 @@ def countContours(cv_image, contours):
         times = 0
         for k in range(len(out)):
             for j in range(len(out[k])):
-                sumblack = sumblack + out[k, j]
-                times = times + 1
+                if (out[k,j] < 255):
+                    sumblack = sumblack + out[k, j]
+                    times = times + 1
         
         #if the contour is big enough -- filters out smaller contours
         sizeLimit = 30

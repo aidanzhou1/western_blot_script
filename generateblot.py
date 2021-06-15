@@ -2,13 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import matplotlib.image as mpimg
+from numpy.core.numeric import outer
 from skimage import data, io
 from skimage.color import rgb2gray, gray2rgb
 import cv2
 from skimage import img_as_ubyte
 from skimage.transform import rotate
 import random
-
+import math
 
 
 def testgetvalidcontourslikeversion3withthehopeofseeingtheirsizes():
@@ -87,49 +88,126 @@ def testcropimagesandplaceindownload():
             valid_contours = np.append(valid_contours, contours[i])
             contour_values = np.append(contour_values, 10)
 
-def generateblot():
+def dimensionScale(integer):
+    scale = 1
+    while (integer > 10):
+        integer = round(integer / 10)
+        scale += 1
+    return (scale)
 
+def generateblot(a,b,c,d, grayscale_range_max, grayscale_range_min, canvas_size):
+
+    
     #generate an all black array of floats
-    array = np.full((40, 40),1.0)
-    
-    print(array.shape)
+    #array has to a np 32 array (meaning it is an array of floats) because otherwise grayscale will all round to 1
+    array = np.full((canvas_size, canvas_size),1.0)
+
+    #scale (i.e. tens vs. hundredths vs. thousandths) of the blot being generated
+    #used to calibrate how much I need to increment the horizontal buffer by to make it still look round
+    blot_scale = dimensionScale(d - c)
+
+    #gap between the top and bottom endpoints (a,b) and the y values where the curve starts and where the rectangle ends
+    buffer_vertical = int(a/2)
+    #since buffer is added to top and subtracted from bottom, buffer has to be bigger than difference between top (a) and bottom (b)
+    if (buffer_vertical > (int(b-a)/2)):
+        outer_blot_buffer = int(1 * int((b-a)/2))
 
     
-    #somehow generate it in a circular way so that the outside is always lighter than the inside and that it forms random shapes
+    #generate inner blot (rectangle)
+    for y in range(a + buffer_vertical,b - buffer_vertical):
+        for x in range(c, d):
 
-    a = 10
-    b = 35
-    c = 10
-    d = 35
-    
-    #generate inner blot
-    for i in range(a + 5,b - 5):
-        for j in range(c + 5, d - 5):
-            value = random.uniform(0.2, 0.0)
+            value = random.uniform(grayscale_range_max,grayscale_range_min)
+            array[y,x] = value
 
-            array[i,j] = value
     #generate outer blot
+    
+    #horizontal buffer used to create the curve. you draw less and less as you go towards the end points so that it curves and closes
+    buffer_horizontal_changing = 0
 
-    for i in range
-    #generate buffer
+    #going from top of rectangle upwards towards a (why it's reversed -- getting smaller)
+    for y in reversed(range(a, a + buffer_vertical)):
+        for x in range(c + buffer_horizontal_changing,d - buffer_horizontal_changing):
+            value = random.uniform(grayscale_range_max,grayscale_range_min)
+            array[y,x] = value
+        
+        #since horizontal buffer subtracted from both sides, it has to be always less than half the width
+        if (buffer_horizontal_changing < int((d-c) / 2)):
+
+            #increment is how much to increment the horizontal buffer by 
+            increment = random.randrange(0,blot_scale)
+            print('regular')
+
+            #when the y value is less than halfway (or near the top) of the curve, the horizontal buffer increments by more to make the curve flatter
+            if (y < a + int(((a + buffer_vertical) - a)/2)):
+                print('a')
+                increment = random.randrange(blot_scale, blot_scale * 2)
+            buffer_horizontal_changing += increment
+    
+    #same as above but going from bottom of rectangle downwards towards b (no need for reverse)
+    #^BUT changes to variables and directions of operations (i.e. which substracts what)
+    buffer_horizontal_changing = 0
+    for y in range (b-buffer_vertical, b):
+        for x in range(c + buffer_horizontal_changing,d - buffer_horizontal_changing):
+            value = random.uniform(grayscale_range_max,grayscale_range_min)
+            array[y,x] = value
+        if (buffer_horizontal_changing < int((d-c) / 2)):
+            increment = random.randrange(0,blot_scale)
+            print('regular')
+
+            #when the y value is more than halfway (or near the bottom) of the curve, the horizontal buffer increments by more to make the curve flatter
+            if (y > (b - buffer_vertical) +  int((b - (b - buffer_vertical))/2)):
+                print('b')
+                increment = random.randrange(blot_scale, blot_scale * 2)
+            buffer_horizontal_changing += increment
+
+    #at this moment array has to still be a float otherwise it will all be 1
+    # cv2.imshow("image", array)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    return (array)
+
+def calculateBlotValue(array):
+    sum = 0
+    timesthrough = 0
+    #array is a 2d array of ints from 0 to 255
+    for y in range(len(array)):
+        for x in range(len(array[y])):
+            
+            pixel_value = array[y,x]
+            #filte rout the white ones because they aren't part of the blot
+            if (pixel_value < 255):
+                sum += pixel_value
+                timesthrough += 1
+    
+    return (sum/timesthrough)
 
 
+#somehow generate it in a circular way so that the outside is always lighter than the inside and that it forms random shapes
+a = 50 #vertical top
+b = 105 #vertical bottom
+c = 20 #horizontal left
+d = 120 #horizontal right
 
+#lightest value of blot
+grayscale_range_max = 0.2
+#darkest value of blot
+grayscale_range_min = 0.1
 
-    # #for the height values between 20 and 30
-    # for i in range(10,35):
-    #     #for the horizontal values between 10 and 15
-    #     for j in range(6,18):
-    #         value = random.uniform(0.6, 0.0)
-    #         array[i,j] = value
-
-    print(array)
-    print(array.shape)
-    #has to be floats
-    cv2.imshow("image", array)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    print(array)    
-
+canvas_size = 150
 # testcropimagesandplaceindownload()
-generateblot()
+
+
+for i in range(1,100):
+    array =  generateblot(a,b,c,d,grayscale_range_max, grayscale_range_min, canvas_size)
+
+
+
+    #convert from floating point numbers to ints. 
+    #this essentially converts the array from a 32-bit floating point to an 8bit int or 16bit int (basically makes it an int array)
+    #https://stackoverflow.com/questions/37026582/saving-an-image-with-imwrite-in-opencv-writes-all-black-but-imshow-shows-correct/37027314
+    array1 = array * 255
+
+    #find the blot value of each one to a T
+    average_value = calculateBlotValue(array1)
+    cv2.imwrite('generated_blots/' + str( round(average_value,6) ) + '.png', array1)
