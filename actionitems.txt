@@ -1,6 +1,0 @@
-What I want to do with this script:
-- generate artificial blots with values to use as part of my classifier
-Right now what I have working:
-- mechanically outlining blots and then finding their average grayscale values. 
-- outputting those values and contours on their image
-
