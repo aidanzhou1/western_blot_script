@@ -107,10 +107,10 @@ def generateblot(a,b,c,d, grayscale_range_max, grayscale_range_min, canvas_size)
     blot_scale = dimensionScale(d - c)
 
     #gap between the top and bottom endpoints (a,b) and the y values where the curve starts and where the rectangle ends
-    buffer_vertical = int(a/2)
+    buffer_vertical = int(a/2) + random.randint(1 , 10)
     #since buffer is added to top and subtracted from bottom, buffer has to be bigger than difference between top (a) and bottom (b)
     if (buffer_vertical > (int(b-a)/2)):
-        outer_blot_buffer = int(1 * int((b-a)/2))
+        buffer_vertical = int(1 * int((b-a)/2))
 
     
     #generate inner blot (rectangle)
@@ -136,12 +136,9 @@ def generateblot(a,b,c,d, grayscale_range_max, grayscale_range_min, canvas_size)
 
             #increment is how much to increment the horizontal buffer by 
             increment = random.randrange(0,blot_scale)
-            print('regular')
-
             #when the y value is less than halfway (or near the top) of the curve, the horizontal buffer increments by more to make the curve flatter
             if (y < a + int(((a + buffer_vertical) - a)/2)):
-                print('a')
-                increment = random.randrange(blot_scale, blot_scale * 2)
+                increment = random.randrange(int(blot_scale/2), blot_scale)
             buffer_horizontal_changing += increment
     
     #same as above but going from bottom of rectangle downwards towards b (no need for reverse)
@@ -153,12 +150,10 @@ def generateblot(a,b,c,d, grayscale_range_max, grayscale_range_min, canvas_size)
             array[y,x] = value
         if (buffer_horizontal_changing < int((d-c) / 2)):
             increment = random.randrange(0,blot_scale)
-            print('regular')
 
             #when the y value is more than halfway (or near the bottom) of the curve, the horizontal buffer increments by more to make the curve flatter
             if (y > (b - buffer_vertical) +  int((b - (b - buffer_vertical))/2)):
-                print('b')
-                increment = random.randrange(blot_scale, blot_scale * 2)
+                increment = random.randrange(int(blot_scale/2), blot_scale)
             buffer_horizontal_changing += increment
 
     #at this moment array has to still be a float otherwise it will all be 1
@@ -183,31 +178,50 @@ def calculateBlotValue(array):
     return (sum/timesthrough)
 
 
-#somehow generate it in a circular way so that the outside is always lighter than the inside and that it forms random shapes
-a = 50 #vertical top
-b = 105 #vertical bottom
-c = 20 #horizontal left
-d = 120 #horizontal right
-
-#lightest value of blot
-grayscale_range_max = 0.2
-#darkest value of blot
-grayscale_range_min = 0.1
-
-canvas_size = 150
-# testcropimagesandplaceindownload()
+def singleRun(a, b, c, d, grayscale_range_max, grayscale_range_min):
 
 
-for i in range(1,100):
-    array =  generateblot(a,b,c,d,grayscale_range_max, grayscale_range_min, canvas_size)
+    # #somehow generate it in a circular way so that the outside is always lighter than the inside and that it forms random shapes
+    # a = 50 #vertical top
+    # b = 105 #vertical bottom
+    # c = 20 #horizontal left
+    # d = 120 #horizontal right
+
+    # #lightest value of blot
+    # grayscale_range_max = 0.21
+    # #darkest value of blot
+    # grayscale_range_min = 0.1
+
+    canvas_size = 150
 
 
 
-    #convert from floating point numbers to ints. 
-    #this essentially converts the array from a 32-bit floating point to an 8bit int or 16bit int (basically makes it an int array)
-    #https://stackoverflow.com/questions/37026582/saving-an-image-with-imwrite-in-opencv-writes-all-black-but-imshow-shows-correct/37027314
-    array1 = array * 255
+    for i in range(1,2):
+        array =  generateblot(a,b,c,d,grayscale_range_max, grayscale_range_min, canvas_size)
 
-    #find the blot value of each one to a T
-    average_value = calculateBlotValue(array1)
-    cv2.imwrite('generated_blots/' + str( round(average_value,6) ) + '.png', array1)
+
+
+        #convert from floating point numbers to ints. 
+        #this essentially converts the array from a 32-bit floating point to an 8bit int or 16bit int (basically makes it an int array)
+        #https://stackoverflow.com/questions/37026582/saving-an-image-with-imwrite-in-opencv-writes-all-black-but-imshow-shows-correct/37027314
+        array1 = array * 255
+
+        #find the blot value of each one to a T
+        average_value = calculateBlotValue(array1)
+        print(average_value)
+        cv2.imwrite('generated_blots2/' + str( round(average_value,6) ) + '.png', array1)
+    
+
+def main():
+
+    for a in range(15,20):
+        for b in range (45, 50):
+            for c in range(15,20):
+                for d in range(135,140):
+                    for grayscale_range_max in range(20,25):
+                        for grayscale_range_min in range(25,30):
+                            print(str(a * 2) + "," +str(b * 2) + "," +str(c) + "," +str (d) + "," +str (grayscale_range_max * 2/100) + "," + str (grayscale_range_min /100) + ")")
+                            singleRun(a * 2,b * 2,c,d,((grayscale_range_max * 2)/100), (grayscale_range_min/100))
+
+
+main()

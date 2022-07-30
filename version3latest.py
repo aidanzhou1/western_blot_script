@@ -243,7 +243,7 @@ def countContours(cv_image, contours):
         (bottomy, bottomx) = (np.max(y), np.max(x))
         out = out[topy:bottomy + 1, topx:bottomx + 1]
 
-        #sum to find average value
+    #sum to find average value
         sumblack = 0
         times = 0
         for k in range(len(out)):
@@ -251,13 +251,22 @@ def countContours(cv_image, contours):
                 if (out[k,j] < 255):
                     sumblack = sumblack + out[k, j]
                     times = times + 1
+
+        #MAYBE HERE I CAN SAVE ALL THE OUT IMAGES INTO A FOLDER TO SEE IF IT's RUNNING AS EXPECTED
+
+        folder_path = 'H:\Repos\western_blot_script/individual_blot_results'
+        if (not path.exists(folder_path)):
+            os.mkdir(folder_path)
         
-        #if the contour is big enough -- filters out smaller contours
-        sizeLimit = 30
-        if (times > sizeLimit):
+        sizeLimit = 200
+
+        #filters out the small contours, the super skinny ones, and the ones that cover the whole map
+        if(times > sizeLimit and len(out) > 8 and len(out[0]>8) and len(out) < 400 and len(out[0] < 400)):
             valuelist = np.append(valuelist, (sumblack/times))
             #store index of "good" contours
             goodlist = np.append(goodlist, [int(i + 1)])
+            cv2.imwrite("individual_blot_results/" + str(sumblack/times) +".jpeg", out)
+    return goodlist, valuelist
 
     return goodlist, valuelist
 
