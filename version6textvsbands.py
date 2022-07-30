@@ -29,7 +29,7 @@ def loadImages():
         img = cv2.resize(img, (28,28))
         # cv2.imshow('img', img)
         # cv2.waitKey(0) 
-        label = 3 #band
+        label = 0 #band
         # if i >100:
         #     label = 3
         # print(filename)
@@ -60,7 +60,7 @@ def loadImages():
 
 
     for i in range(15000):
-        label2.append(4) #teXt
+        label2.append(1) #teXt
         # print('appending labels')
     images = np.array(images)
     print(x_train[12])
@@ -133,12 +133,9 @@ def runModel(images, testimages, labels, testlabels):
     model.add(tf.keras.layers.MaxPooling2D((2, 2)))
     model.add(tf.keras.layers.Conv2D(56, (3, 3), activation='relu'))
     model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Flatten())
 
     model.add(tf.keras.layers.Dense(units=64, activation=tf.nn.relu))
-    model.add(tf.keras.layers.Dense(units=128, activation=tf.nn.relu))
-    model.add(tf.keras.layers.Dense(units=12, activation=tf.nn.relu))
-
+    model.add(tf.keras.layers.Dense(units=36, activation=tf.nn.relu))
     model.add(tf.keras.layers.Dense(units=6, activation=tf.nn.softmax))
 
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -159,7 +156,7 @@ def runModel(images, testimages, labels, testlabels):
     # print(testlabels[18])
 
 
-    history = model.fit(images, labels, epochs=100, validation_data=(testimages, testlabels))
+    history = model.fit(images, labels, epochs=4, validation_data=(testimages, testlabels))
 
 
     # loss, accuracy = model.evaluate(testimages, testlabels)
@@ -230,9 +227,11 @@ def mainTODO():
 
 
     images,values = loadImages()
-    np.random.shuffle(images)
-    np.random.shuffle(values)
-
+    assert len(images) == len (values)
+    p = np.random.permutation(len(images))
+    images = images[p]
+    values = values[p]
+    print(values)
     testimages = images[5 * int(len(images)/6):len(images)]
     testvalues = values[5 * int(len(values)/6):len(values)]
     images = images[0: 5 * int(len(images)/6)]
@@ -269,9 +268,9 @@ def test(model):
     cv2.waitKey(0)
     output = np.argmax(prediction)
 
-    if output == 3:
+    if output == 0:
         print('band')
-    if output == 4:
+    if output == 1:
         print('text')
 
     input_image1 = io.imread('mltest/3.png')
@@ -293,11 +292,34 @@ def test(model):
     output = np.argmax(prediction)
 
     print(output)
-    if output == 3:
+    if output == 0:
         print('band')
-    if output == 4:
+    if output == 1:
         print('text')
+
+
+
+    input_image3 = io.imread('mltest/bandtest.jpeg')
+    input_image3 = rgb2gray(input_image3)
+    cv_image3 = img_as_ubyte(input_image3)
+    cv_image3 = cv2.resize(cv_image3, (28,28))
     
+    
+    thresh2 = cv2.adaptiveThreshold(cv_image3,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,51,6)
+
+    input_image3 =  cv2.cvtColor(thresh2,cv2.COLOR_GRAY2RGB)
+
+    prediction = model.predict(np.array([input_image3]))
+    print('prediction' + str(prediction))
+    print('prediction shape' + str(prediction.shape))
+    cv2.imshow('thresh', np.array(input_image3))
+    cv2.waitKey(0)
+    output = np.argmax(prediction)
+
+    if output == 0:
+        print('band')
+    if output == 1:
+        print('text')
 
 
 mainTODO()
